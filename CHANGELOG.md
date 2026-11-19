@@ -4,6 +4,48 @@ All notable changes to the Roci Standby theme are recorded here. Entries are new
 
 ---
 
+## [1.1.0] — 2026-11-19
+
+**FEAT: the "back soon" page carries each site's brand (colours, logo, name), with friendlier copy per context and the contact line as a button. Every colour pair is checked for WCAG AA in PHP.**
+
+**In plain English (2026-11-19):** The "back soon" page now matches each site's colours and logo.
+
+### Where the brand comes from (`inc/standby-page.php` 1.1.0)
+
+- **First:** the new `'brand'` arg of `roci_standby_render()`, which the parent's Maintenance mode passes (El Rocinante 8.8.0).
+- **Else:** the option `roci_brand_snapshot`, read raw. The parent saves it, so the standby theme and the drop-in carry the brand too.
+- **Else:** today's neutral light + dark page.
+- **Keys:** `surface`, `text`, `heading`, `muted`, `accent`, `accent_text` (each `#rrggbb` only; anything else is ignored), `logo_url` (http(s)), `name`.
+- **Logo and name:** the brand's own come first, then the old logo chain and site name.
+
+### Contrast (`roci_standby_colors()`, `roci_standby_contrast()`, WCAG relative luminance)
+
+- **Text on surface** must reach 4.5, else the default pair (`#1d1d1f` on `#ffffff`) is used.
+- **Heading and muted on surface** must reach 4.5, else they use the text colour.
+- **Button label on accent** must reach 4.5, else `#000` or `#fff`, whichever is higher. One of them always reaches at least 4.58 (the harness checks all 256 greys), so the default-button fallback is defensive only.
+- **Accent edge against surface** must reach 3, else the button gets a 2px border in the text colour.
+- **Hover** is the accent mixed 10% toward black, used only while the label still reaches 4.5 on it, and the edge 3 when there's no border.
+- **With a brand:** `color-scheme: light` and no dark override. **Without one:** the neutral light + dark page, as before.
+
+### Copy, layout, button
+
+- **Copy:**
+  - maintenance: "We're making a few improvements" / "We'll be back shortly. Thanks for your patience."
+  - standby: "We'll be right back" / "We're working on the site and will be back soon."
+  - error: "Something went wrong on our end" / "We're already on it. Please check back in a few minutes."
+  - `roci_standby_message` still filters all three, and the parent's custom Maintenance message still replaces the maintenance line.
+- **Layout:** logo (max 18rem wide, auto height, alt = name) or the name → heading → line → the contact **button** → a footer, "© year name".
+- **The button:** a real `<a>`, at least 44px tall, rounded, with a `:focus-visible` outline (2px, the text colour, offset 3px) and the hover above.
+  - The contact order and rules are unchanged: WhatsApp (Business, else Social; `api.whatsapp.com`), then phone, then email.
+  - Labels: "Message us on WhatsApp", "Call {number}", "Email {address}".
+- **Size:** the inline `<style>` is 1,348 bytes with a brand and 1,486 without; the limit is 2.5 KB. System fonts, no JS, no external request.
+
+### The drop-in (`php-error.php` 1.0.1)
+
+- Its own minimal fallback, used only when the renderer file is missing, carries the new error copy. It stays unstyled-simple.
+
+---
+
 ## [1.0.1] — 2026-11-19
 
 **FIX: the WhatsApp contact link uses `https://api.whatsapp.com/send?phone=` instead of `wa.me`, and falls back to Social → WhatsApp.**

@@ -14,17 +14,33 @@ A fallback theme and a fatal-error drop-in for El Rocinante sites. When a site's
 
 All three use one renderer, `roci_standby_render()` in `inc/standby-page.php`. It prints a complete HTML document and depends on nothing outside that file, so it also works while WordPress is half loaded.
 
+### The brand snapshot (1.1.0)
+
+The page takes the site's brand without loading any parent code.
+
+- **What it is:** El Rocinante (8.8.0+) builds a small brand array from its palette: `surface`, `text`, `heading`, `muted`, `accent`, `accent_text` (`#rrggbb`), `logo_url` and `name`. It saves this to the option `roci_brand_snapshot` whenever it changes, checked on admin page loads and after a theme switch.
+- **Where the page gets it:** Maintenance mode passes it straight in. The standby theme and the `php-error.php` drop-in read the saved option.
+- **No snapshot** (a parent older than 8.8.0, or nobody has opened wp-admin since updating): the page is the neutral light + dark version.
+- **Contrast:** every colour pair is checked for WCAG AA before use, with fallbacks. A failing text colour falls back to the defaults, a failing button label switches to black or white, and a pale button gets a border.
+- **Changing what a site sends:** a child adjusts it with the parent's `roci_brand_snapshot` filter.
+
 ### What the page shows
 
-- **Logo:** the active theme's custom logo, else the previous theme's custom logo, else the site icon, else just the site name.
-- **Message:** "We'll be right back" plus one line that depends on the context (`standby`, `maintenance` or `error`). A plugin or child can change it with the `roci_standby_message` filter, which receives `array( 'heading', 'text' )` and the context.
-- **Contact line:** the first of these that is filled in:
+- **Logo:** the snapshot's logo, else the active theme's custom logo, else the previous theme's custom logo, else the site icon, else just the site name.
+- **Message, by context:**
+  - maintenance: "We're making a few improvements" / "We'll be back shortly. Thanks for your patience."
+  - standby: "We'll be right back" / "We're working on the site and will be back soon."
+  - error: "Something went wrong on our end" / "We're already on it. Please check back in a few minutes."
+
+  A plugin or child can change them with the `roci_standby_message` filter, which receives `array( 'heading', 'text' )` and the context.
+- **Contact button** (in the brand's accent colour): the first of these that is filled in:
   - WhatsApp: Theme Settings → Business → WhatsApp Number, else Social → WhatsApp. It links to `https://api.whatsapp.com/send?phone=…`, never `wa.me`, which fails on some Costa Rican networks.
   - Business → Phone.
   - Business → Email.
 
-  If none is set there is no contact line, and the admin email is never shown.
-- No JavaScript, no external requests, one small inline stylesheet, light and dark schemes. `noindex`.
+  If none is set there is no button, and the admin email is never shown.
+- **Footer:** "© year name".
+- No JavaScript, no external requests, system fonts, one small inline stylesheet. Light only with a brand, light and dark without one. `noindex`.
 
 ## Install (per site)
 

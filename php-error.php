@@ -11,8 +11,12 @@
  * Must never fatal itself: every call is guarded, the renderer is used only
  * when its file exists, and an inline fallback page needs nothing at all.
  *
+ * 1.0.1 (roci-standby 1.1.0): the inline fallback (used only when the theme's
+ * renderer file is missing) carries the new error copy, "Something went wrong
+ * on our end". It stays unstyled-simple: no brand, no button.
+ *
  * File:    php-error.php
- * Version: 1.0.0
+ * Version: 1.0.1
  * Updated: 2026-11-19
  *
  * @package RociStandby
@@ -113,7 +117,7 @@ $roci_name_esc = htmlspecialchars( $roci_name, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>We'll be right back<?php echo '' !== $roci_name_esc ? ' – ' . $roci_name_esc : ''; ?></title>
+<title>Something went wrong on our end<?php echo '' !== $roci_name_esc ? ' – ' . $roci_name_esc : ''; ?></title>
 <style>
 :root{color-scheme:light dark;--bg:#fff;--fg:#1d1d1f;--mu:#555}
 @media (prefers-color-scheme:dark){:root{--bg:#121212;--fg:#f2f2f2;--mu:#b3b3b3}}
@@ -131,8 +135,8 @@ p{margin:0 0 1rem}
 <?php if ( '' !== $roci_name_esc ) : ?>
 <p class="name"><?php echo $roci_name_esc; ?></p>
 <?php endif; ?>
-<h1>We'll be right back</h1>
-<p class="mu">Something went wrong on our side. Please check back soon.</p>
+<h1>Something went wrong on our end</h1>
+<p class="mu">We're already on it. Please check back in a few minutes.</p>
 </main>
 </body>
 </html>

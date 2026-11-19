@@ -4,6 +4,22 @@ All notable changes to the Roci Standby theme are recorded here. Entries are new
 
 ---
 
+## [1.0.1] — 2026-11-19
+
+**FIX: the WhatsApp contact link uses `https://api.whatsapp.com/send?phone=` instead of `wa.me`, and falls back to Social → WhatsApp.**
+
+**In plain English (2026-11-19):** The WhatsApp button on the "back soon" page now opens reliably on every network.
+
+- **The link:** `wa.me` fails DNS on some Costa Rican networks, so the contact line now links to `https://api.whatsapp.com/send?phone={digits}` (`inc/standby-page.php` 1.0.1).
+- **The number:** Theme Settings → Business → WhatsApp Number first, else Social → WhatsApp. This matches El Rocinante 8.6.0's `roci_whatsapp_number()`.
+  - Both are still read raw, with the same guards.
+  - A link gives the number in its `phone=` value or its `wa.me/` path.
+  - Anything else gives its digits.
+  - 7–15 digits, or no WhatsApp line.
+- Phone and email, the fallbacks after WhatsApp, are unchanged.
+
+---
+
 ## [1.0.0] — 2026-11-19
 
 **FEAT: first release. A fallback theme (`WP_DEFAULT_THEME`) and a `php-error.php` drop-in that show one branded "We'll be right back" page.**

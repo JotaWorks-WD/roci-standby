@@ -18,7 +18,12 @@ All three use one renderer, `roci_standby_render()` in `inc/standby-page.php`. I
 
 - **Logo:** the active theme's custom logo, else the previous theme's custom logo, else the site icon, else just the site name.
 - **Message:** "We'll be right back" plus one line that depends on the context (`standby`, `maintenance` or `error`). A plugin or child can change it with the `roci_standby_message` filter, which receives `array( 'heading', 'text' )` and the context.
-- **Contact line:** read from Theme Settings → Business, in this order: WhatsApp, then phone, then email. Only the first one that is filled in is shown. If none is set there is no contact line, and the admin email is never shown.
+- **Contact line:** the first of these that is filled in:
+  - WhatsApp: Theme Settings → Business → WhatsApp Number, else Social → WhatsApp. It links to `https://api.whatsapp.com/send?phone=…`, never `wa.me`, which fails on some Costa Rican networks.
+  - Business → Phone.
+  - Business → Email.
+
+  If none is set there is no contact line, and the admin email is never shown.
 - No JavaScript, no external requests, one small inline stylesheet, light and dark schemes. `noindex`.
 
 ## Install (per site)

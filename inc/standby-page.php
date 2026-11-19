@@ -8,8 +8,12 @@
  * this file: every WordPress call is guarded with function_exists() and
  * wrapped so a failing call falls back instead of fataling.
  *
+ * 1.0.1: WhatsApp reads roci_business → whatsapp, else roci_social →
+ * whatsapp (the parent's rule since 8.6.0), and links to
+ * https://api.whatsapp.com/send?phone= instead of wa.me.
+ *
  * File:    inc/standby-page.php
- * Version: 1.0.0
+ * Version: 1.0.1
  * Updated: 2026-11-19
  *
  * @package RociStandby
@@ -128,21 +132,52 @@ if ( ! function_exists( 'roci_standby_render' ) ) {
             }
         }
 
-        // Contact line, raw from roci_business: WhatsApp → phone → email.
+        // Contact line, read raw: WhatsApp (roci_business, else roci_social) →
+        // phone → email. The number rule mirrors the parent's
+        // roci_whatsapp_digits() (8.6.0), copied because this file depends on
+        // nothing outside itself: a link gives its phone= value or its
+        // wa.me/<number> path, anything else its digits; 7–15 digits or ''.
+        $wa_digits = static function ( $value ) {
+            $value = trim( (string) $value );
+            if ( '' === $value ) {
+                return '';
+            }
+            if ( preg_match( '#^[a-z][a-z0-9+.\-]*:|/#i', $value ) ) {
+                if ( preg_match( '/[?&]phone=([^&#]+)/i', $value, $m ) ) {
+                    $digits = preg_replace( '/\D+/', '', rawurldecode( $m[1] ) );
+                } elseif ( preg_match( '#(?:^|//|\.)wa\.me/\+?(\d+)#i', $value, $m ) ) {
+                    $digits = $m[1];
+                } else {
+                    $digits = '';
+                }
+            } else {
+                $digits = preg_replace( '/\D+/', '', $value );
+            }
+            $length = strlen( $digits );
+            return ( $length >= 7 && $length <= 15 ) ? $digits : '';
+        };
+
         $contact  = '';
         $business = $call( 'get_option', array( 'roci_business' ), array() );
-        if ( is_array( $business ) ) {
-            $wa    = ! empty( $business['whatsapp'] ) ? preg_replace( '/\D+/', '', (string) $business['whatsapp'] ) : '';
-            $phone = ! empty( $business['phone'] ) ? trim( (string) $business['phone'] ) : '';
-            $email = ! empty( $business['email'] ) ? trim( (string) $business['email'] ) : '';
+        $business = is_array( $business ) ? $business : array();
+        $social   = $call( 'get_option', array( 'roci_social' ), array() );
+        $social   = is_array( $social ) ? $social : array();
 
-            if ( '' !== $wa ) {
-                $contact = '<a href="' . $esc( 'https://wa.me/' . $wa ) . '">' . $esc( $t( 'Message us on WhatsApp' ) ) . '</a>';
-            } elseif ( '' !== $phone && preg_match( '/\d/', $phone ) ) {
-                $contact = $esc( $t( 'Call us:' ) ) . ' <a href="' . $esc( 'tel:' . preg_replace( '/[^\d+]/', '', $phone ) ) . '">' . $esc( $phone ) . '</a>';
-            } elseif ( '' !== $email && false !== strpos( $email, '@' ) && ! preg_match( '/[\s<>"]/', $email ) ) {
-                $contact = $esc( $t( 'Email us:' ) ) . ' <a href="' . $esc( 'mailto:' . $email ) . '">' . $esc( $email ) . '</a>';
-            }
+        $wa = ! empty( $business['whatsapp'] ) ? $wa_digits( $business['whatsapp'] ) : '';
+        if ( '' === $wa && ! empty( $social['whatsapp'] ) ) {
+            $wa = $wa_digits( $social['whatsapp'] );
+        }
+
+        $phone = ! empty( $business['phone'] ) ? trim( (string) $business['phone'] ) : '';
+        $email = ! empty( $business['email'] ) ? trim( (string) $business['email'] ) : '';
+
+        // api.whatsapp.com, never wa.me: wa.me fails DNS on some Costa Rican networks.
+        if ( '' !== $wa ) {
+            $contact = '<a href="' . $esc( 'https://api.whatsapp.com/send?phone=' . $wa ) . '">' . $esc( $t( 'Message us on WhatsApp' ) ) . '</a>';
+        } elseif ( '' !== $phone && preg_match( '/\d/', $phone ) ) {
+            $contact = $esc( $t( 'Call us:' ) ) . ' <a href="' . $esc( 'tel:' . preg_replace( '/[^\d+]/', '', $phone ) ) . '">' . $esc( $phone ) . '</a>';
+        } elseif ( '' !== $email && false !== strpos( $email, '@' ) && ! preg_match( '/[\s<>"]/', $email ) ) {
+            $contact = $esc( $t( 'Email us:' ) ) . ' <a href="' . $esc( 'mailto:' . $email ) . '">' . $esc( $email ) . '</a>';
         }
 
         // Notice bar.

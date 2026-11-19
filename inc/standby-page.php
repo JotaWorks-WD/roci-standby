@@ -19,8 +19,12 @@
  * roci_standby_colors(), with fallbacks. New copy per context, the contact
  * line as a button, a "© year name" footer.
  *
+ * 1.1.1: the brand's logo_w / logo_h (El Rocinante 8.9.0) become the <img>
+ * width / height, and the logo CSS no longer sets width:auto, so the box is
+ * reserved before it loads (max-width still scales it down).
+ *
  * File:    inc/standby-page.php
- * Version: 1.1.0
+ * Version: 1.1.1
  * Updated: 2026-11-19
  *
  * @package RociStandby
@@ -217,6 +221,12 @@ if ( ! function_exists( 'roci_standby_render' ) ) {
         $logo = array( 'url' => '', 'w' => 0, 'h' => 0 );
         if ( isset( $brand['logo_url'] ) && is_string( $brand['logo_url'] ) && preg_match( '#^https?://#i', trim( $brand['logo_url'] ) ) ) {
             $logo['url'] = trim( $brand['logo_url'] );
+            // 1.1.1: the snapshot's intrinsic size (parent 8.9.0), so the box is
+            // reserved before the image loads. Absent for an SVG.
+            if ( isset( $brand['logo_w'], $brand['logo_h'] ) && (int) $brand['logo_w'] > 0 && (int) $brand['logo_h'] > 0 ) {
+                $logo['w'] = (int) $brand['logo_w'];
+                $logo['h'] = (int) $brand['logo_h'];
+            }
         }
         $ids = array();
         if ( '' === $logo['url'] ) {
@@ -363,7 +373,7 @@ if ( ! function_exists( 'roci_standby_render' ) ) {
 html,body{margin:0}
 body{display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:var(--fg);font:1.0625rem/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;text-align:center}
 main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;max-width:36rem;margin:0 auto;padding:4rem 1rem 2rem}
-.logo{display:block;width:auto;max-width:min(18rem,100%);height:auto;margin:0 auto 2rem}
+.logo{display:block;max-width:min(18rem,100%);height:auto;margin:0 auto 2rem}
 .name{margin:0 0 2rem;font-weight:600;font-size:1.25rem;color:var(--hd)}
 h1{margin:0 0 .75rem;font-size:clamp(1.75rem,5vw,2.5rem);line-height:1.2;color:var(--hd)}
 p{margin:0 0 1.5rem}

@@ -4,6 +4,18 @@ All notable changes to the Roci Standby theme are recorded here. Entries are new
 
 ---
 
+## [1.1.1] — 2026-11-19
+
+**FIX: the logo keeps its space while it loads. The brand's `logo_w` / `logo_h` become the `<img>` width and height.**
+
+**In plain English (2026-11-19):** The "back soon" page no longer shifts while the logo loads.
+
+- **Where the size comes from** (`inc/standby-page.php` 1.1.1): El Rocinante 8.9.0's snapshot carries `logo_w` / `logo_h` (ints; none for an SVG). When present, the renderer prints them as the logo's `width` / `height`.
+- **The CSS:** `.logo` no longer sets `width: auto`, which overrode the attributes. It keeps `max-width: min(18rem, 100%)` and `height: auto`, so a large logo still scales down at its own ratio.
+- **No size** (an SVG, or a parent older than 8.9.0): no attributes, same as before.
+
+---
+
 ## [1.1.0] — 2026-11-19
 
 **FEAT: the "back soon" page carries each site's brand (colours, logo, name), with friendlier copy per context and the contact line as a button. Every colour pair is checked for WCAG AA in PHP.**
